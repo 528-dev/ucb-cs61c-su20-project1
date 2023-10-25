@@ -71,16 +71,31 @@ int main(int argc, char **argv) {
 unsigned int stringHash(void *s) {
   char *string = (char *)s;
   // -- TODO --
+  unsigned int ret = 0;
+  for (char *p = string; *p; ++p){
+    ret = (ret + (unsigned int)(tolower(*p)));
+  }
+  return ret;
 }
 
 /*
  * This should return a nonzero value if the two strings are identical 
  * (case sensitive comparison) and 0 otherwise.
  */
-int stringEquals(void *s1, void *s2) {
+int stringEquals(void *s1, void *s2) { // s1 is input   s2 in hashtable
   char *string1 = (char *)s1;
   char *string2 = (char *)s2;
   // -- TODO --
+  if (!strcmp(string1, string2)) return 1;
+
+  for (char *q = string1 + 1; *q; ++q) *q = tolower(*q);
+
+  if (!strcmp(string1, string2)) return 1;
+
+  string1[0] = tolower(string1[0]);
+  if (!strcmp(string1, string2)) return 1;
+
+  return 0;
 }
 
 /*
@@ -101,6 +116,18 @@ int stringEquals(void *s1, void *s2) {
  */
 void readDictionary(char *dictName) {
   // -- TODO --
+  FILE *fptr = fopen(dictName, "r");
+  if (!fptr){
+    fputs("file not exists !", stderr);
+    exit(1);
+  }
+  char buf[256];
+  while (~fscanf(fptr, "%s", buf)){
+    char *p = malloc(sizeof(char) * (strlen(buf) + 1));
+    strcpy(p, buf);
+    insertData(dictionary, p, p);
+  }
+  fclose(fptr);
 }
 
 /*
@@ -126,4 +153,30 @@ void readDictionary(char *dictName) {
  */
 void processInput() {
   // -- TODO --
+  char ch;
+  char *str = malloc(sizeof(char) * 60);
+
+  int len = 0;
+
+  while ((ch = getchar()) != EOF){
+    if (isalpha(ch)){
+      if (len >= sizeof(str) - 5) str = realloc(str, sizeof(str) + 60);
+      str[len ++] = ch; 
+    }else{
+      if (!len){
+        putchar(ch);
+      }else{
+        str[len ++] = '\0';
+        fputs(str, stdout);
+        if (findData(dictionary, str));
+        else fputs(" [sic]", stdout);
+        putchar(ch);
+        len = 0;
+      }
+    }
+  }
+  str[len ++] = '\0';
+  fputs(str, stdout);
+  if (findData(dictionary, str));
+  else fputs(" [sic]", stdout);
 }
